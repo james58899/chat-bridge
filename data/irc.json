@@ -1,0 +1,9 @@
+{
+    "host": "chat.freenode.net",
+    "nick": "YSITD_Chat_Bot",
+    "channel": "#ysitd",
+    "port": 6697,
+    "secure": true,
+    "username": "oktw",
+    "realname": "oktw - https://www.oktw.one/"
+}
