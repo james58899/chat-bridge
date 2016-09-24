@@ -1,28 +1,33 @@
-const TelegramBot = require('node-telegram-bot-api');
-const util = require('util');
-const imgur = require('imgur');
-const config = require('../data/telegram.json');
+const TelegramBot = require('node-telegram-bot-api'),
+    util = require('util'),
+    imgur = require('imgur'),
+    fs = require('fs'),
+    sharp = require('sharp'),
+    exec = require('child_process').exec,
+    config = require('../data/telegram.json');
 
-var main, username;
+let main, username;
 
 imgur.setClientId('41ad90f344bdf2f');
-var bot = new TelegramBot(config.token, {
+const bot = new TelegramBot(config.token, {
     polling: {
         timeout: 60,
         interval: 0
     }
 });
 
+exec('rm -rf TGtmp_*');
 bot.getMe().then(me => username = me.username);
 
-bot.on('message', (msg) => {
+bot.on('message', msg => {
     if (msg.chat.id === config.ChatID) {
-        var send = (message) => {
+        // console.log(msg);
+        var send = message => {
             if (msg.reply_to_message) {
                 if (msg.reply_to_message.text) {
                     if (msg.reply_to_message.from.username === username) {
-                        var ReplyUsername = msg.reply_to_message.text.match(/<\S+>/i)[1];
-                        var ShortMessage;
+                        let ReplyUsername = msg.reply_to_message.text.match(/<\S+>/i)[1];
+                        let ShortMessage;
                         if (msg.reply_to_message.text.replace(/^<\S+>: /i, '').length > 5) {
                             ShortMessage = msg.reply_to_message.text.replace(/^<\S+>: /i, '').substr(0, 5) + '...';
                         }
@@ -32,7 +37,7 @@ bot.on('message', (msg) => {
                         main.message('Telegram', msg.from.username, util.format('(%s: %s) %s', ReplyUsername, ShortMessage, message));
                     }
                     else {
-                        var ShortMessage;
+                        let ShortMessage;
                         if (msg.reply_to_message.text.length > 5) {
                             ShortMessage = msg.reply_to_message.text.replace(/\s/g, ' ').substr(0, 5) + '...';
                         }
@@ -44,7 +49,7 @@ bot.on('message', (msg) => {
                 }
                 else {
                     if (msg.reply_to_message.from.username === username) {
-                        var ReplyUsername = msg.reply_to_message.text.match(/<\S+>/i)[0].match(/[^<>]+/i)[0];
+                        let ReplyUsername = msg.reply_to_message.text.match(/<\S+>/i)[0].match(/[^<>]+/i)[0];
                         main.message('Telegram', msg.from.username, util.format('(reply %s) %s', ReplyUsername, message));
                     }
                     else {
@@ -60,27 +65,40 @@ bot.on('message', (msg) => {
             send(msg.text);
         }
         if (msg.photo) {
-            var fileId = msg.photo[msg.photo.length - 1].file_id;
+            let fileId = msg.photo[msg.photo.length - 1].file_id;
             bot.getFileLink(fileId).then((url) => {
                 imgur.uploadUrl(url)
-                    .then(res => send(res.data.link))
+                    .then(res => {
+                        if (msg.caption) {
+                            send(util.format(`${res.data.link} ${msg.caption}`));
+                        }
+                        else {
+                            send(res.data.link);
+                        }
+                    })
                     .catch(err => console.error(err.message));
             });
         }
-        if (msg.caption) {
-            send(msg.caption);
-        }
         if (msg.sticker) {
-            bot.getFileLink(msg.sticker.file_id).then(function(url) {
-                imgur.uploadUrl(url).then(function(res) {
-                    send(res.data.link);
-                }).catch(function(err) {
-                    console.error(err.message);
+            // let filename = Math.floor((Math.random() * 1000) + 1) + '.webp';
+            let tmp = fs.mkdtempSync('./TGtmp_');
+            bot.downloadFile(msg.sticker.file_id, tmp)
+                .then(path => {
+                    sharp(path).toFile(path + '.png')
+                        .then(() => imgur.uploadFile(path + '.png')
+                            .then(res => {
+                                send(msg.sticker.emoji + ' ' + res.data.link);
+                                fs.unlink(path);
+                                fs.unlink(path + '.png', () => fs.rmdir(tmp));
+                            }));
                 });
-            });
         }
     }
 });
+
+// bot.on('edited_message', (msg => {
+//     console.log(msg);
+// }));
 
 module.exports = Hub => {
     main = Hub;
