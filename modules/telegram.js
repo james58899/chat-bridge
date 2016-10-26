@@ -9,6 +9,8 @@ const TelegramBot = require('node-telegram-bot-api'),
 let main, username;
 
 imgur.setClientId('41ad90f344bdf2f');
+
+//Init API
 const bot = new TelegramBot(config.token, {
     polling: {
         timeout: 60,
@@ -16,17 +18,21 @@ const bot = new TelegramBot(config.token, {
     }
 });
 
+//Clean up Sticker Cache
 exec('rm -rf TGtmp_*');
+
+//Get Username
 bot.getMe().then(me => username = me.username);
 
+//message
 bot.on('message', msg => {
     if (msg.chat.id === config.ChatID) {
-        // console.log(msg);
-        var send = message => {
+        //message processes
+        let send = message => {
             if (msg.reply_to_message) {
                 if (msg.reply_to_message.text) {
                     if (msg.reply_to_message.from.username === username) {
-                        let ReplyUsername = msg.reply_to_message.text.match(/<\S+>/i)[1];
+                        let ReplyUsername = msg.reply_to_message.text.match(/<(\S+)>/i)[1];
                         let ShortMessage;
                         if (msg.reply_to_message.text.replace(/^<\S+>: /i, '').length > 5) {
                             ShortMessage = msg.reply_to_message.text.replace(/^<\S+>: /i, '').substr(0, 5) + '...';
@@ -61,37 +67,32 @@ bot.on('message', msg => {
                 main.message('Telegram', msg.from.username, message);
             }
         };
+
         if (msg.text) {
             send(msg.text);
         }
         if (msg.photo) {
             let fileId = msg.photo[msg.photo.length - 1].file_id;
-            bot.getFileLink(fileId).then((url) => {
-                imgur.uploadUrl(url)
-                    .then(res => {
-                        if (msg.caption) {
-                            send(util.format(`${res.data.link} ${msg.caption}`));
-                        }
-                        else {
-                            send(res.data.link);
-                        }
-                    })
-                    .catch(err => console.error(err.message));
+            bot.getFileLink(fileId).then(url => {
+                imgur.uploadUrl(url).then(res => {
+                    if (msg.caption) {
+                        send(util.format(`${res.data.link} ${msg.caption}`));
+                    }
+                    else {
+                        send(res.data.link);
+                    }
+                });
             });
         }
         if (msg.sticker) {
-            // let filename = Math.floor((Math.random() * 1000) + 1) + '.webp';
             let tmp = fs.mkdtempSync('./TGtmp_');
-            bot.downloadFile(msg.sticker.file_id, tmp)
-                .then(path => {
-                    sharp(path).toFile(path + '.png')
-                        .then(() => imgur.uploadFile(path + '.png')
-                            .then(res => {
-                                send(msg.sticker.emoji + ' ' + res.data.link);
-                                fs.unlink(path);
-                                fs.unlink(path + '.png', () => fs.rmdir(tmp));
-                            }));
-                });
+            bot.downloadFile(msg.sticker.file_id, tmp).then(path => {
+                sharp(path).toFile(path + '.png').then(() => imgur.uploadFile(path + '.png').then(res => {
+                    send(msg.sticker.emoji + ' ' + res.data.link);
+                    fs.unlink(path);
+                    fs.unlink(path + '.png', () => fs.rmdir(tmp));
+                }));
+            });
         }
     }
 });
