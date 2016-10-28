@@ -19,8 +19,10 @@ bot.on('message' + config.channel, (sender, message) => {
     main.message('IRC', sender, message);
 });
 
-bot.on('action', (sender, message) => {
-    main.message('IRC', sender, '/me ' + message);
+bot.on('action', (sender, to, message) => {
+    if (to === config.channel) {
+        main.message('IRC', sender, '/me ' + message);
+    }
 });
 
 module.exports = Hub => {
