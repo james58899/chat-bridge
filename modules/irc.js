@@ -1,3 +1,4 @@
+"use strict";
 const irc = require('irc'),
     util = require('util'),
     Pastee = require('pastee'),

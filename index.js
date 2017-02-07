@@ -56,7 +56,7 @@ rl.on('line', (line) => {
         break;
     }
     rl.prompt();
-});
+}).on('close', () => process.exit(0));
 
 //Init Modules
 console.log('Loading modules...');
