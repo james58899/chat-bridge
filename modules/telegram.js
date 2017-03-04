@@ -14,8 +14,10 @@ imgur.setClientId('41ad90f344bdf2f');
 //Init API
 const bot = new TelegramBot(config.token, {
     polling: {
-        timeout: 60,
-        interval: 0
+        interval: 0,
+        params: {
+            timeout: 60
+        }
     }
 });
 
