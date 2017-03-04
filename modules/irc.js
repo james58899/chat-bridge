@@ -1,8 +1,8 @@
-"use strict";
-const irc = require('irc'),
-    util = require('util'),
-    Pastee = require('pastee'),
-    config = require('../data/irc.json');
+'use strict';
+const irc = require('irc');
+const util = require('util');
+const Pastee = require('pastee');
+const config = require('../data/irc.json');
 
 let main;
 
@@ -26,7 +26,7 @@ bot.on('action', (sender, to, message) => {
     }
 });
 
-module.exports = Hub => {
+module.exports = (Hub) => {
     main = Hub;
     main.on('message', (from, sender, message) => {
         setImmediate(() => {
@@ -38,20 +38,19 @@ module.exports = Hub => {
                             console.log(err);
                         }
                     });
-                }
-                else {
+                } else {
                     bot.say(config.channel, util.format('<%s>: %s', sender, message.replace(/\s/g, ' ')));
 
-                    //URL Title
+                    // URL Title
                     if (config.title && /https?:\/\/\S*/ig.test(message)) {
-                        let url = require('url'),
-                            request = require("request"),
-                            iconv = require('iconv-lite'),
-                            charsetDetector = require("node-icu-charset-detector"),
-                            cheerio = require('cheerio'),
-                            urls = message.match(/https?:\/\/\S*/ig);
-                        urls.forEach(uri => {
-                            let options = {
+                        const url = require('url');
+                        const request = require('request');
+                        const iconv = require('iconv-lite');
+                        const charsetDetector = require('node-icu-charset-detector');
+                        const cheerio = require('cheerio');
+                        const urls = message.match(/https?:\/\/\S*/ig);
+                        urls.forEach((uri) => {
+                            const options = {
                                 url: encodeURI(decodeURIComponent(url.parse(uri).href)),
                                 headers: {
                                     'User-Agent': 'request',
@@ -62,10 +61,14 @@ module.exports = Hub => {
                                 encoding: null
                             };
                             request(options, (error, response, body) => {
-                                if (error) return;
-                                let $ = cheerio.load(iconv.decode(body, charsetDetector.detectCharset(body)));
-                                let title = $('title').text().trim().replace(/\s/g, ' ');
-                                if (title) bot.say(config.channel, '[Title] ' + title);
+                                if (error) {
+                                    return;
+                                }
+                                const $ = cheerio.load(iconv.decode(body, charsetDetector.detectCharset(body)));
+                                const title = $('title').text().trim().replace(/\s/g, ' ');
+                                if (title) {
+                                    bot.say(config.channel, '[Title] ' + title);
+                                }
                             });
                         });
                     }

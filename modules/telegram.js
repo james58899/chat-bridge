@@ -1,17 +1,18 @@
-"use strict";
-const TelegramBot = require('node-telegram-bot-api'),
-    util = require('util'),
-    imgur = require('imgur'),
-    fs = require('fs'),
-    sharp = require('sharp'),
-    exec = require('child_process').exec,
-    config = require('../data/telegram.json');
+'use strict';
+const TelegramBot = require('node-telegram-bot-api');
+const util = require('util');
+const imgur = require('imgur');
+const fs = require('fs');
+const sharp = require('sharp');
+const exec = require('child_process').exec;
+const config = require('../data/telegram.json');
 
-let main, username;
+let main;
+let username;
 
 imgur.setClientId('41ad90f344bdf2f');
 
-//Init API
+// Init API
 const bot = new TelegramBot(config.token, {
     polling: {
         interval: 0,
@@ -21,52 +22,48 @@ const bot = new TelegramBot(config.token, {
     }
 });
 
-//Clean up Sticker Cache
+// Clean up Sticker Cache
 exec('rm -rf TGtmp_*');
 
-//Get Username
-bot.getMe().then(me => username = me.username);
+// Get Username
+bot.getMe().then((me) => username = me.username);
 
-//message
-bot.on('message', msg => {
-    if (msg.chat.id !== config.ChatID) return;
-    //message processes
-    let send = (message) => {
+// message
+bot.on('message', (msg) => {
+    if (msg.chat.id !== config.ChatID) {
+        return;
+    }
+    // message processes
+    const send = (message) => {
         if (msg.reply_to_message) {
             if (msg.reply_to_message.text) {
                 if (msg.reply_to_message.from.username === username) {
-                    let ReplyUsername = msg.reply_to_message.text.match(/<(\S+)>/i)[1];
+                    const ReplyUsername = msg.reply_to_message.text.match(/<(\S+)>/i)[1];
                     let ShortMessage;
                     if (msg.reply_to_message.text.replace(/^<\S+>: /i, '').length > 5) {
                         ShortMessage = msg.reply_to_message.text.replace(/^<\S+>: /i, '').substr(0, 5) + '...';
-                    }
-                    else {
+                    } else {
                         ShortMessage = msg.reply_to_message.text.replace(/^<\S+>: /i, '');
                     }
                     main.message('Telegram', msg.from.username, util.format('(%s: %s) %s', ReplyUsername, ShortMessage, message));
-                }
-                else {
+                } else {
                     let ShortMessage;
                     if (msg.reply_to_message.text.length > 5) {
                         ShortMessage = msg.reply_to_message.text.replace(/\s/g, ' ').substr(0, 5) + '...';
-                    }
-                    else {
+                    } else {
                         ShortMessage = msg.reply_to_message.text.replace(/\s/g, ' ');
                     }
                     main.message('Telegram', msg.from.username, util.format('(%s: %s) %s', msg.reply_to_message.from.username, ShortMessage, message));
                 }
-            }
-            else {
+            } else {
                 if (msg.reply_to_message.from.username === username) {
-                    let ReplyUsername = msg.reply_to_message.text.match(/<\S+>/i)[0].match(/[^<>]+/i)[0];
+                    const ReplyUsername = msg.reply_to_message.text.match(/<\S+>/i)[0].match(/[^<>]+/i)[0];
                     main.message('Telegram', msg.from.username, util.format('(reply %s) %s', ReplyUsername, message));
-                }
-                else {
+                } else {
                     main.message('Telegram', msg.from.username, util.format('(reply %s) %s', msg.reply_to_message.from.username, message));
                 }
             }
-        }
-        else {
+        } else {
             main.message('Telegram', msg.from.username, message);
         }
     };
@@ -75,13 +72,12 @@ bot.on('message', msg => {
         send(msg.text);
     }
     if (msg.photo) {
-        let fileId = msg.photo[msg.photo.length - 1].file_id;
-        bot.getFileLink(fileId).then(url => {
-            imgur.uploadUrl(url).then(res => {
+        const fileId = msg.photo[msg.photo.length - 1].file_id;
+        bot.getFileLink(fileId).then((url) => {
+            imgur.uploadUrl(url).then((res) => {
                 if (msg.caption) {
                     send(util.format(`${res.data.link} ${msg.caption}`));
-                }
-                else {
+                } else {
                     send(res.data.link);
                 }
             });
@@ -89,13 +85,14 @@ bot.on('message', msg => {
     }
     if (msg.sticker) {
         fs.mkdtemp('./TGtmp_', (err, tmp) => {
-            if (err) throw err;
-            bot.downloadFile(msg.sticker.file_id, tmp).then(path => {
-                sharp(path).toFile(path + '.png').then(() => imgur.uploadFile(path + '.png').then(res => {
+            if (err) {
+                throw err;
+            }
+            bot.downloadFile(msg.sticker.file_id, tmp).then((path) => {
+                sharp(path).toFile(path + '.png').then(() => imgur.uploadFile(path + '.png').then((res) => {
                     if (msg.sticker.emoji) {
                         send(msg.sticker.emoji + ' ' + res.data.link);
-                    }
-                    else {
+                    } else {
                         send(res.data.link);
                     }
                     fs.unlink(path);
@@ -105,13 +102,12 @@ bot.on('message', msg => {
         });
     }
     if (msg.document) {
-        if (msg.document.mime_type.match("image")) {
-            bot.getFileLink(msg.document.file_id).then(url => {
-                imgur.uploadUrl(url).then(res => {
+        if (msg.document.mime_type.match('image')) {
+            bot.getFileLink(msg.document.file_id).then((url) => {
+                imgur.uploadUrl(url).then((res) => {
                     if (msg.caption) {
                         send(util.format(`${res.data.link} ${msg.caption}`));
-                    }
-                    else {
+                    } else {
                         send(res.data.link);
                     }
                 });
@@ -120,7 +116,7 @@ bot.on('message', msg => {
     }
 });
 
-module.exports = Hub => {
+module.exports = (Hub) => {
     main = Hub;
     main.on('message', (from, sender, message) => {
         setImmediate(() => {
