@@ -35,36 +35,27 @@ bot.on('message', (msg) => {
     }
     // message processes
     const send = (message) => {
+        const sender = msg.from.username ? msg.from.username : msg.from.first_name;
         if (msg.reply_to_message) {
             if (msg.reply_to_message.text) {
                 if (msg.reply_to_message.from.username === username) {
                     const ReplyUsername = msg.reply_to_message.text.match(/<(\S+)>/i)[1];
-                    let ShortMessage;
+                    let ShortMessage = msg.reply_to_message.text.replace(/^<\S+>: /i, '');
                     if (msg.reply_to_message.text.replace(/^<\S+>: /i, '').length > 5) {
                         ShortMessage = msg.reply_to_message.text.replace(/^<\S+>: /i, '').substr(0, 5) + '...';
-                    } else {
-                        ShortMessage = msg.reply_to_message.text.replace(/^<\S+>: /i, '');
                     }
-                    main.message('Telegram', msg.from.username, util.format('(%s: %s) %s', ReplyUsername, ShortMessage, message));
+                    main.message('Telegram', sender, util.format('(%s: %s) %s', ReplyUsername, ShortMessage, message));
                 } else {
-                    let ShortMessage;
+                    let ShortMessage = msg.reply_to_message.text.replace(/\s/g, ' ');
                     if (msg.reply_to_message.text.length > 5) {
                         ShortMessage = msg.reply_to_message.text.replace(/\s/g, ' ').substr(0, 5) + '...';
-                    } else {
-                        ShortMessage = msg.reply_to_message.text.replace(/\s/g, ' ');
                     }
-                    main.message('Telegram', msg.from.username, util.format('(%s: %s) %s', msg.reply_to_message.from.username, ShortMessage, message));
-                }
-            } else {
-                if (msg.reply_to_message.from.username === username) {
-                    const ReplyUsername = msg.reply_to_message.text.match(/<\S+>/i)[0].match(/[^<>]+/i)[0];
-                    main.message('Telegram', msg.from.username, util.format('(reply %s) %s', ReplyUsername, message));
-                } else {
-                    main.message('Telegram', msg.from.username, util.format('(reply %s) %s', msg.reply_to_message.from.username, message));
+                    const ReplyUsername = msg.reply_to_message.from.username ? msg.reply_to_message.from.username : msg.reply_to_message.from.first_name;
+                    main.message('Telegram', sender, util.format('(%s: %s) %s', ReplyUsername, ShortMessage, message));
                 }
             }
         } else {
-            main.message('Telegram', msg.from.username, message);
+            main.message('Telegram', sender, message);
         }
     };
 
