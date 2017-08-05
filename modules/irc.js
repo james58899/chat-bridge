@@ -17,10 +17,15 @@ const bot = new irc.Client(config.host, config.nick, {
 });
 
 if (config.pasteeToken) {
+    console.log(config.pasteeToken);
     paste = new Pastee(config.pasteeToken);
 } else {
     paste = new Pastee();
 }
+
+bot.on('registered', (message) => {
+    console.log('Connected to irc.');
+});
 
 bot.on('message' + config.channel, (sender, message) => {
     main.message('IRC', sender, message);
