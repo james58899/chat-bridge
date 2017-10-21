@@ -6,6 +6,7 @@ const fs = require('fs');
 const sharp = require('sharp');
 const exec = require('child_process').exec;
 const config = require('../data/telegram.json');
+const request = require('request');
 
 let main;
 let username;
@@ -13,7 +14,7 @@ let username;
 imgur.setClientId('41ad90f344bdf2f');
 
 // Init API
-const bot = new TelegramBot(config.token, {
+const bot = new TelegramBot(config.token[0], {
     polling: {
         interval: 0,
         params: {
@@ -21,6 +22,7 @@ const bot = new TelegramBot(config.token, {
         }
     }
 });
+
 
 // Clean up Sticker Cache
 exec('rm -rf TGtmp_*');
@@ -107,12 +109,29 @@ bot.on('message', (msg) => {
     }
 });
 
+function* senderTokenMaker() {
+    var index = 0;
+    while(true){
+        yield config.token[index];
+        index++;
+        if(index>=config.token.length) index = 0;
+    }
+}
+
+var senderToken = senderTokenMaker();
+
 module.exports = (Hub) => {
     main = Hub;
     main.on('message', (from, sender, message) => {
         setImmediate(() => {
             if (from !== 'Telegram') {
-                bot.sendMessage(config.ChatID, util.format('<%s>: %s', sender, message));
+                var x = senderToken.next().value;
+                console.log('https://api.telegram.org/bot'+x+'/sendMessage')
+                request.post('https://api.telegram.org/bot'+x+'/sendMessage', {form:{
+                    chat_id: config.ChatID,
+                    text: util.format('<%s>: %s', sender, message)
+                }})
+                //bot.sendMessage(config.ChatID, util.format('<%s>: %s', sender, message));
             }
         });
     });
