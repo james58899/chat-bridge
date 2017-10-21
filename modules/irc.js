@@ -5,8 +5,8 @@ const Pastee = require('pastee');
 const config = require('../data/irc.json');
 
 let main;
+let paste;
 
-const paste = new Pastee();
 const bot = new irc.Client(config.host, config.nick, {
     channels: [config.channel],
     userName: config.username,
@@ -14,6 +14,17 @@ const bot = new irc.Client(config.host, config.nick, {
     port: config.port,
     secure: config.secure,
     stripColors: true
+});
+
+if (config.pasteeToken) {
+    console.log(config.pasteeToken);
+    paste = new Pastee(config.pasteeToken);
+} else {
+    paste = new Pastee();
+}
+
+bot.on('registered', (message) => {
+    console.log('Connected to irc.');
 });
 
 bot.on('message' + config.channel, (sender, message) => {
