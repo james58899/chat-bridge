@@ -131,7 +131,7 @@ module.exports = (Hub) => {
                     chat_id: config.ChatID,
                     text: util.format('<%s>: %s', sender, message)
                 }})
-                //bot.sendMessage(config.ChatID, util.format('OwO <%s>: %s', sender, message));
+                //bot.sendMessage(config.ChatID, util.format('<%s>: %s', sender, message));
             }
         });
     });
