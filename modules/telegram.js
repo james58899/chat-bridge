@@ -110,28 +110,28 @@ bot.on('message', (msg) => {
 });
 
 function* senderTokenMaker() {
-    var index = 0;
-    while(true){
+    let index = 0;
+    while (true) {
         yield config.token[index];
         index++;
-        if(index>=config.token.length) index = 0;
+        if (index>=config.token.length) index = 0;
     }
 }
 
-var senderToken = senderTokenMaker();
+const senderToken = senderTokenMaker();
 
 module.exports = (Hub) => {
     main = Hub;
     main.on('message', (from, sender, message) => {
         setImmediate(() => {
             if (from !== 'Telegram') {
-                var x = senderToken.next().value;
-                console.log('https://api.telegram.org/bot'+x+'/sendMessage')
-                request.post('https://api.telegram.org/bot'+x+'/sendMessage', {form:{
+                const x = senderToken.next().value;
+                console.log('https://api.telegram.org/bot'+x+'/sendMessage');
+                request.post('https://api.telegram.org/bot'+x+'/sendMessage', {form: {
                     chat_id: config.ChatID,
                     text: util.format('<%s>: %s', sender, message)
-                }})
-                //bot.sendMessage(config.ChatID, util.format('<%s>: %s', sender, message));
+                }});
+                // bot.sendMessage(config.ChatID, util.format('<%s>: %s', sender, message));
             }
         });
     });
