@@ -1,4 +1,4 @@
-# chat-bridge
+# chat-bridge [![CodeFactor](https://www.codefactor.io/repository/github/james58899/chat-bridge/badge)](https://www.codefactor.io/repository/github/james58899/chat-bridge)
 同步不同聊天平台的訊息
 
 # 系統需求
