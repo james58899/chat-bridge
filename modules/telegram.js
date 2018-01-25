@@ -14,7 +14,7 @@ let username;
 imgur.setClientId('41ad90f344bdf2f');
 
 // Init API
-const bot = new TelegramBot(config.token[0], {
+const bot = new TelegramBot((typeof config.token === 'string') ? config.token : config.token[0], {
     polling: {
         interval: 0,
         params: {
