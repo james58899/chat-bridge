@@ -3,8 +3,8 @@
 
 # 系統需求
 
-- node.js 6.0+
-- npm
+- node.js 7.10.1+
+- npm / yarn
 
 # 安裝方法
 
