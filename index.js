@@ -1,9 +1,10 @@
 'use strict';
+const path = require('path');
 const fs = require('fs');
 const EventEmitter = require('events');
 const readline = require('readline');
 const rl = readline.createInterface(process.stdin, process.stdout);
-const ignore = require('./data/ignore.json');
+const ignore = require(path.resolve('data', 'ignore.json'));
 
 class Emitter extends EventEmitter {}
 
@@ -34,7 +35,7 @@ rl.on('line', (line) => {
     case 'ban':
         if (line.length === 2 && ignore.indexOf(line[1]) < 0) {
             ignore.push(line[1]);
-            fs.writeFile('./data/ignore.json', JSON.stringify(ignore), function(err) {
+            fs.writeFile(path.resolve('data', 'ignrore.json'), JSON.stringify(ignore), function(err) {
                 if (err) {
                     throw err;
                 }
@@ -47,10 +48,8 @@ rl.on('line', (line) => {
     case 'unban':
         if (line.length === 2 && ignore.indexOf(line[1]) > -1) {
             ignore.splice(ignore.indexOf(line[1]), 1);
-            fs.writeFile('./data/ignore.json', JSON.stringify(ignore), function(err) {
-                if (err) {
-                    throw err;
-                }
+            fs.writeFile(path.resolve('data', 'ignrore.json'), JSON.stringify(ignore), function(err) {
+                if (err) throw err;
                 console.log('已解除封鎖 ' + line[1]);
             });
         } else {
@@ -64,15 +63,18 @@ rl.on('line', (line) => {
 // Init Modules
 console.log('Loading modules...');
 fs.readdir('modules', function(err, files) {
-    if (err) {
-        throw err;
-    }
-    for (let i = 0; i < files.length; i++) {
-        require('./modules/' + files[i])(Hub);
-        console.log('Loaded module %s !', files[i]);
+    if (err) throw err;
+
+    for (const file of files) {
+        try {
+            require(path.resolve('modules', file))(Hub);
+            console.log('Loaded module %s !', file);
+        } catch (error) {
+            console.error(`Can't load module ${file}`, error);
+        }
     }
 });
 
 process.on('uncaughtException', function(ex) {
-    console.log(ex.stack);
+    console.error(ex);
 });
