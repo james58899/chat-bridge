@@ -1,6 +1,6 @@
 {
   "name": "chat-bridge",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "同步不同聊天平台的訊息",
   "main": "index.js",
   "scripts": {
