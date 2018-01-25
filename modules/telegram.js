@@ -1,11 +1,11 @@
 'use strict';
 const TelegramBot = require('node-telegram-bot-api');
-const util = require('util');
 const imgur = require('imgur');
 const fs = require('fs');
 const sharp = require('sharp');
-const exec = require('child_process').exec;
-const config = require('../data/telegram.json');
+const os = require('os');
+const path = require('path');
+const config = require(path.resolve('data', 'telegram.json'));
 const request = require('request');
 
 let main;
@@ -23,88 +23,93 @@ const bot = new TelegramBot(config.token[0], {
     }
 });
 
-
-// Clean up Sticker Cache
-exec('rm -rf TGtmp_*');
-
 // Get Username
 bot.getMe().then((me) => username = me.username);
 
-// message
-bot.on('message', (msg) => {
-    if (msg.chat.id !== config.ChatID) {
-        return;
-    }
-    // message processes
-    const send = (message) => {
+// Message
+bot.on('message', async (msg) => {
+    // Ignore other chat room or private message
+    if (msg.chat.id !== config.ChatID) return;
+
+    // Message processes
+    function send(message) {
         const sender = msg.from.username ? msg.from.username : msg.from.first_name;
+
         if (msg.reply_to_message) {
-            if (msg.reply_to_message.text) {
-                if (msg.reply_to_message.from.username === username) {
-                    const ReplyUsername = msg.reply_to_message.text.match(/<(\S+)>/i)[1];
-                    let ShortMessage = msg.reply_to_message.text.replace(/^<\S+>: /i, '');
-                    if (msg.reply_to_message.text.replace(/^<\S+>: /i, '').length > 5) {
-                        ShortMessage = msg.reply_to_message.text.replace(/^<\S+>: /i, '').substr(0, 5) + '...';
-                    }
-                    main.message('Telegram', sender, util.format('(%s: %s) %s', ReplyUsername, ShortMessage, message));
-                } else {
-                    let ShortMessage = msg.reply_to_message.text.replace(/\s/g, ' ');
-                    if (msg.reply_to_message.text.length > 5) {
-                        ShortMessage = msg.reply_to_message.text.replace(/\s/g, ' ').substr(0, 5) + '...';
-                    }
-                    const ReplyUsername = msg.reply_to_message.from.username ? msg.reply_to_message.from.username : msg.reply_to_message.from.first_name;
-                    main.message('Telegram', sender, util.format('(%s: %s) %s', ReplyUsername, ShortMessage, message));
-                }
+            let replyUsername = msg.reply_to_message.from.username ? msg.reply_to_message.from.username : msg.reply_to_message.from.first_name;
+
+            // Ignore other reply message type content
+            if (!msg.reply_to_message.text) {
+                main.message('Telegram', sender, `(Reply to ${replyUsername}) ${message}`);
+                return;
             }
+
+            let shortMessage = msg.reply_to_message.text.replace(/\s/g, ' ');
+
+            // If reply bot message
+            if (msg.reply_to_message.from.username === username) {
+                replyUsername = shortMessage.match(/<(\S+)>/i)[1];
+                shortMessage = shortMessage.replace(/^<\S+>: /i, '');
+            }
+
+            if (shortMessage.length > 5) {
+                shortMessage = shortMessage.substr(0, 5).trim() + '...';
+            }
+
+            main.message('Telegram', sender, `(${replyUsername}: ${shortMessage}) ${message}`);
         } else {
             main.message('Telegram', sender, message);
         }
-    };
+    }
 
+    // Text message
     if (msg.text) {
         send(msg.text);
     }
+
+    // Image
     if (msg.photo) {
+        // Upload image to imgur
         const fileId = msg.photo[msg.photo.length - 1].file_id;
-        bot.getFileLink(fileId).then((url) => {
-            imgur.uploadUrl(url).then((res) => {
-                if (msg.caption) {
-                    send(util.format(`${res.data.link} ${msg.caption}`));
-                } else {
-                    send(res.data.link);
-                }
-            });
-        });
+        const image = await imgur.uploadUrl(await bot.getFileLink(fileId));
+
+        if (msg.caption) {
+            send(`${msg.caption} ${image.data.link}`);
+        } else {
+            send(image.data.link);
+        }
     }
+
+    // Sticker
     if (msg.sticker) {
-        fs.mkdtemp('./TGtmp_', (err, tmp) => {
-            if (err) {
-                throw err;
-            }
-            bot.downloadFile(msg.sticker.file_id, tmp).then((path) => {
-                sharp(path).toFile(path + '.png').then(() => imgur.uploadFile(path + '.png').then((res) => {
-                    if (msg.sticker.emoji) {
-                        send(msg.sticker.emoji + ' ' + res.data.link);
-                    } else {
-                        send(res.data.link);
-                    }
-                    fs.unlink(path);
-                    fs.unlink(path + '.png', () => fs.rmdir(tmp));
-                }));
-            });
-        });
+        const tmp = os.tmpdir();
+        const sticker = await bot.downloadFile(msg.sticker.file_id, tmp);
+
+        // convert to png and upload to imgur
+        await sharp(sticker).toFile(sticker + '.png');
+        const link = (await imgur.uploadFile(sticker + '.png')).data.link;
+
+        if (msg.sticker.emoji) {
+            send(msg.sticker.emoji + ' ' + link);
+        } else {
+            send(link);
+        }
+
+        fs.unlink(sticker, () => {});
+        fs.unlink(sticker + '.png', () => {});
     }
+
+    // Image as file type
     if (msg.document) {
         if (msg.document.mime_type.match('image')) {
-            bot.getFileLink(msg.document.file_id).then((url) => {
-                imgur.uploadUrl(url).then((res) => {
-                    if (msg.caption) {
-                        send(util.format(`${res.data.link} ${msg.caption}`));
-                    } else {
-                        send(res.data.link);
-                    }
-                });
-            });
+            let link = await bot.getFileLink(msg.document.file_id);
+            link = (await imgur.uploadUrl(link)).data.link;
+
+            if (msg.caption) {
+                send(`${msg.caption} ${link}`);
+            } else {
+                send(link);
+            }
         }
     }
 });
@@ -114,7 +119,7 @@ function* senderTokenMaker() {
     while (true) {
         yield config.token[index];
         index++;
-        if (index>=config.token.length) index = 0;
+        if (index >= config.token.length) index = 0;
     }
 }
 
@@ -125,13 +130,12 @@ module.exports = (Hub) => {
     main.on('message', (from, sender, message) => {
         setImmediate(() => {
             if (from !== 'Telegram') {
-                const x = senderToken.next().value;
-                console.log('https://api.telegram.org/bot'+x+'/sendMessage');
-                request.post('https://api.telegram.org/bot'+x+'/sendMessage', {form: {
-                    chat_id: config.ChatID,
-                    text: util.format('<%s>: %s', sender, message)
-                }});
-                // bot.sendMessage(config.ChatID, util.format('<%s>: %s', sender, message));
+                request.post('https://api.telegram.org/bot' + senderToken.next().value + '/sendMessage', {
+                    form: {
+                        chat_id: config.ChatID,
+                        text: `<${sender}>: ${message}`
+                    }
+                });
             }
         });
     });
