@@ -95,8 +95,8 @@ bot.on('message', async (msg) => {
             send(link);
         }
 
-        fs.unlink(sticker, () => {});
-        fs.unlink(sticker + '.png', () => {});
+        fs.unlink(sticker, () => { });
+        fs.unlink(sticker + '.png', () => { });
     }
 
     // Image as file type
@@ -130,12 +130,16 @@ module.exports = (Hub) => {
     main.on('message', (from, sender, message) => {
         setImmediate(() => {
             if (from !== 'Telegram') {
-                request.post('https://api.telegram.org/bot' + senderToken.next().value + '/sendMessage', {
-                    form: {
-                        chat_id: config.ChatID,
-                        text: `<${sender}>: ${message}`
-                    }
-                });
+                if (typeof config.token === 'string') {
+                    bot.sendMessage(config.ChatID, `<${sender}>: ${message}`);
+                } else {
+                    request.post('https://api.telegram.org/bot' + senderToken.next().value + '/sendMessage', {
+                        form: {
+                            chat_id: config.ChatID,
+                            text: `<${sender}>: ${message}`
+                        }
+                    });
+                }
             }
         });
     });
