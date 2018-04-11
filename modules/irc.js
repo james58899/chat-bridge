@@ -1,9 +1,9 @@
 'use strict';
-const path = require('path');
-const irc = require('irc');
-const util = require('util');
+const {resolve} = require('path');
+const {format} = require('util');
+const irc = require('irc-upd');
 const Pastee = require('pastee');
-const config = require(path.resolve('data', 'irc.json'));
+const config = require(resolve('data', 'irc.json'));
 
 let main;
 let paste;
@@ -47,7 +47,7 @@ module.exports = (Hub) => {
             // Send large message to pastee
             if (Buffer.byteLength(message, 'utf8') > 300) {
                 paste.paste(message, (err, res) => {
-                    bot.say(config.channel, util.format('<%s>: %s', sender, res.raw));
+                    bot.say(config.channel, format('<%s>: %s', sender, res.raw));
                     if (err) {
                         console.log(err);
                     }
@@ -55,14 +55,14 @@ module.exports = (Hub) => {
                 return;
             }
 
-            bot.say(config.channel, util.format('<%s>: %s', sender, message.replace(/\s/g, ' ')));
+            bot.say(config.channel, format('<%s>: %s', sender, message.replace(/\s/g, ' ')));
 
             // URL Title
             if (config.title && /https?:\/\/\S*/ig.test(message)) {
                 const url = require('url');
                 const request = require('request');
                 const iconv = require('iconv-lite');
-                const charsetDetector = require('node-icu-charset-detector');
+                const jschardet = require('jschardet');
                 const cheerio = require('cheerio');
                 const urls = message.match(/https?:\/\/\S*/ig);
                 urls.forEach((uri) => {
@@ -80,7 +80,7 @@ module.exports = (Hub) => {
                         if (error) {
                             return;
                         }
-                        const $ = cheerio.load(iconv.decode(body, charsetDetector.detectCharset(body)));
+                        const $ = cheerio.load(iconv.decode(body, jschardet.detect(body).encoding));
                         const title = $('title').text().trim().replace(/\s/g, ' ');
                         if (title) {
                             bot.say(config.channel, '[Title] ' + title);

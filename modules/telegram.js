@@ -1,11 +1,11 @@
 'use strict';
+const {unlink} = require('fs');
+const {tmpdir} = require('os');
+const {resolve} = require('path');
 const TelegramBot = require('node-telegram-bot-api');
 const imgur = require('imgur');
-const fs = require('fs');
 const sharp = require('sharp');
-const os = require('os');
-const path = require('path');
-const config = require(path.resolve('data', 'telegram.json'));
+const config = require(resolve('data', 'telegram.json'));
 const request = require('request');
 
 let main;
@@ -82,7 +82,7 @@ bot.on('message', async (msg) => {
 
     // Sticker
     if (msg.sticker) {
-        const tmp = os.tmpdir();
+        const tmp = tmpdir();
         const sticker = await bot.downloadFile(msg.sticker.file_id, tmp);
 
         // convert to png and upload to imgur
@@ -95,8 +95,8 @@ bot.on('message', async (msg) => {
             send(link);
         }
 
-        fs.unlink(sticker, () => { });
-        fs.unlink(sticker + '.png', () => { });
+        unlink(sticker, () => { });
+        unlink(sticker + '.png', () => { });
     }
 
     // Image as file type
