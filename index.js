@@ -14,15 +14,7 @@ Hub.message = function(from, sender, message) {
     }
 };
 
-const checkIgnore = function(nick) {
-    let result = true;
-    ignore.forEach(function(ignore) {
-        if (nick.match(new RegExp(ignore, 'gi'))) {
-            result = false;
-        }
-    });
-    return result;
-};
+const checkIgnore = (nick) => ignore.every( (x) => !(nick.match(new RegExp(x, 'gi'))) );
 
 // Init Modules
 console.log('Loading modules...');
