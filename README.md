@@ -1,4 +1,5 @@
 # chat-bridge [![CodeFactor](https://www.codefactor.io/repository/github/james58899/chat-bridge/badge)](https://www.codefactor.io/repository/github/james58899/chat-bridge)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjames58899%2Fchat-bridge.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjames58899%2Fchat-bridge?ref=badge_shield)
 同步不同聊天平台的訊息
 
 # 系統需求
@@ -33,3 +34,6 @@
 
 ### ignore.json
 忽略清單，防止有多個bot時造成loop
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjames58899%2Fchat-bridge.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjames58899%2Fchat-bridge?ref=badge_large)
