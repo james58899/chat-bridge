@@ -26,7 +26,7 @@
     "jschardet": "^1.6.0",
     "node-telegram-bot-api": "^0.30.0",
     "pastee": "^0.1.3",
-    "request": "^2.85.0",
+    "request": "^2.88.0",
     "sharp": "^0.20.1"
   },
   "devDependencies": {
