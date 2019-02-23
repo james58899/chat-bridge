@@ -23,7 +23,7 @@
     "iconv-lite": "^0.4.24",
     "imgur": "^0.2.1",
     "irc-upd": "^0.9.0",
-    "jschardet": "^1.6.0",
+    "jschardet": "^2.1.0",
     "node-telegram-bot-api": "^0.30.0",
     "pastee": "^0.1.3",
     "request": "^2.88.0",
