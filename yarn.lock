@@ -218,6 +218,10 @@ chardet@^0.4.0:
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/chardet/-/chardet-0.4.2.tgz#b5473b33dc97c424e5d98dc87d55d4d8a29c8bf2"
 
+chardet@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/chardet/-/chardet-0.5.0.tgz#fe3ac73c00c3d865ffcc02a0682e2c20b6a06029"
+
 cheerio@^1.0.0-rc.2:
   version "1.0.0-rc.2"
   resolved "https://registry.yarnpkg.com/cheerio/-/cheerio-1.0.0-rc.2.tgz#4b9f53a81b27e4d5dac31c0ffd0cfa03cc6830db"
@@ -911,14 +915,14 @@ irc-colors@^1.1.0:
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/irc-colors/-/irc-colors-1.4.2.tgz#f8dac758553ae91f5647a2a181c0082cfe28c08e"
 
-irc-upd@^0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/irc-upd/-/irc-upd-0.9.0.tgz#34d50d0ee19103f2ddb3864b5209786129fe9482"
+irc-upd@^0.10.0:
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/irc-upd/-/irc-upd-0.10.0.tgz#8ab8361cea17ddc8996b6bea52fad34fe9282025"
   dependencies:
     irc-colors "^1.1.0"
   optionalDependencies:
+    chardet "^0.5.0"
     iconv-lite "^0.4.19"
-    jschardet "^1.6.0"
 
 is-arrayish@^0.3.1:
   version "0.3.1"
