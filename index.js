@@ -8,37 +8,37 @@ class Emitter extends EventEmitter {}
 
 const Hub = new Emitter();
 Hub.message = function(from, sender, message) {
-    console.log(`(${from}) ${sender}: ${message}`);
-    if (checkIgnore(sender)) {
-        this.emit('message', from, sender, message);
-    }
+  console.log(`(${from}) ${sender}: ${message}`);
+  if (checkIgnore(sender)) {
+    this.emit('message', from, sender, message);
+  }
 };
 
 const checkIgnore = function(nick) {
-    let result = true;
-    ignore.forEach(function(ignore) {
-        if (nick.match(new RegExp(ignore, 'gi'))) {
-            result = false;
-        }
-    });
-    return result;
+  let result = true;
+  ignore.forEach(function(ignore) {
+    if (nick.match(new RegExp(ignore, 'gi'))) {
+      result = false;
+    }
+  });
+  return result;
 };
 
 // Init Modules
 console.log('Loading modules...');
 fs.readdir('modules', function(err, files) {
-    if (err) throw err;
+  if (err) throw err;
 
-    for (const file of files) {
-        try {
-            require(path.resolve('modules', file))(Hub);
-            console.log('Loaded module %s !', file);
-        } catch (error) {
-            console.error(`Can't load module ${file}`, error);
-        }
+  for (const file of files) {
+    try {
+      require(path.resolve('modules', file))(Hub);
+      console.log('Loaded module %s !', file);
+    } catch (error) {
+      console.error(`Can't load module ${file}`, error);
     }
+  }
 });
 
 process.on('uncaughtException', function(ex) {
-    console.error(ex);
+  console.error(ex);
 });
