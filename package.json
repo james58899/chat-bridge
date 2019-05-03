@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/james58899/chat-bridge#readme",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.2",
+    "cheerio": "^1.0.0-rc.3",
     "iconv-lite": "^0.4.24",
     "imgur": "^0.3.1",
     "irc-upd": "^0.10.0",
@@ -26,12 +26,12 @@
     "node-telegram-bot-api": "^0.30.0",
     "pastee": "^0.1.3",
     "request": "^2.88.0",
-    "sharp": "^0.22.0"
+    "sharp": "^0.22.1"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
     "eslint-config-google": "^0.12.0",
-    "husky": "^2.1.0"
+    "husky": "^2.2.0"
   },
   "husky": {
     "hooks": {
