@@ -29,7 +29,7 @@
     "sharp": "^0.22.1"
   },
   "devDependencies": {
-    "eslint": "^6.0.0",
+    "eslint": "^6.0.1",
     "eslint-config-google": "^0.13.0",
     "husky": "^2.4.1"
   },
