@@ -135,12 +135,14 @@ module.exports = (Hub) => {
     setImmediate(() => {
       if (from !== 'Telegram') {
         if (typeof config.token === 'string') {
-          matchResult = message.match(/^\$\{\d+\}/);
-          
-          if (matchResult !== null)
+          const matchResult = message.match(/^\$\{\d+\}/);
+          let msgObj;
+
+          if (matchResult !== null) {
              msgObj = {"reply_to_message_id": matchResult[1]};
-          else
+          } else {
              msgObj = null;
+          }
 
           bot.sendMessage(config.ChatID, `<${sender}>: ${message}`, msgObj);
         } else {
