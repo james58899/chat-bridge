@@ -56,9 +56,13 @@ bot.on('message', async (msg) => {
         shortMessage = shortMessage.substr(0, 5).trim() + '...';
       }
 
-      main.message('Telegram', sender, `(${replyUsername}: ${shortMessage}) ${message}`);
+      /*
+       * MSG: <sender> Message (Reply ID: #{123456})
+       * to reply: #{123456} [text]
+       */
+      main.message('Telegram', sender, `(${replyUsername}: ${shortMessage}) ${message} (Reply ID: #{${msg.message_id}})`);
     } else {
-      main.message('Telegram', sender, message);
+      main.message('Telegram', sender, `${message}  (Reply ID: #{${msg.message_id}})`);
     }
   }
 
@@ -131,7 +135,14 @@ module.exports = (Hub) => {
     setImmediate(() => {
       if (from !== 'Telegram') {
         if (typeof config.token === 'string') {
-          bot.sendMessage(config.ChatID, `<${sender}>: ${message}`);
+          matchResult = message.match(/^\$\{\d+\}/);
+          
+          if (matchResult !== null)
+             msgObj = {"reply_to_message_id": matchResult[1]};
+          else
+             msgObj = null;
+
+          bot.sendMessage(config.ChatID, `<${sender}>: ${message}`, msgObj);
         } else {
           request.post('https://api.telegram.org/bot' + senderToken.next().value + '/sendMessage', {
             form: {
