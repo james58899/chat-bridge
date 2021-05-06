@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/james58899/chat-bridge#readme",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.3",
+    "cheerio": "^1.0.0-rc.9",
     "iconv-lite": "^0.6.0",
     "imgur": "^0.3.1",
     "irc-upd": "^0.10.0",
